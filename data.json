@@ -1,0 +1,29 @@
+{
+  "companyName": "Secure Path Solutions",
+  "openingBalances": {
+    "BANK_ISLAMI": 0,
+    "HBL": 0
+  },
+  "receivings": [
+    {
+      "id": "efe3689d96a908-19b97e59081",
+      "party": "IGI",
+      "amount": 10000,
+      "date": "2026-01-15",
+      "notes": "Payment recieved",
+      "status": "RECEIVED",
+      "bank": "HBL"
+    }
+  ],
+  "payments": [
+    {
+      "id": "86e1ab49845688-19b97e6b24b",
+      "party": "Jubilee",
+      "category": "Office",
+      "amount": 5000,
+      "date": "2026-01-04",
+      "notes": "",
+      "bank": "BANK_ISLAMI"
+    }
+  ]
+}
