@@ -1,5 +1,15 @@
 import mongoose from "mongoose";
 
+const ReceiptSchema = new mongoose.Schema({
+  invoiceNo: String,
+  receivedQty: Number,
+  receivedAt: Date,
+  enteredBy: String,
+  paymentMethod: String,
+  bank: String,
+  paymentStatus: String,
+  amount: Number,
+});
 
 const InventoryRequestSchema = new mongoose.Schema(
   {
