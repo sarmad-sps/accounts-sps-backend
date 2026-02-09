@@ -81,7 +81,7 @@ const SalarySchema = new mongoose.Schema(
     bank: {
       type: String,
       enum: ["HBL", "Islamic Bank", "Other"],
-      default: "HBL",
+      default: "",
       // Yeh conditional validation lagao
       validate: {
         validator: function (value) {
