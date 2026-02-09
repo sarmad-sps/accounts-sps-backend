@@ -103,7 +103,7 @@ const StateSchema = new mongoose.Schema({
   openingBalances: {
     BANK_ISLAMI: Number,
     HBL: Number,
-    
+     CASH: Number,
   },
   receivings: [ReceivingSchema],
   expenses: { type: [ExpenseSchema], default: [] },
