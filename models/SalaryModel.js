@@ -46,6 +46,8 @@
 // );
 
 // export default mongoose.model("Salary", SalarySchema);
+
+
 import mongoose from "mongoose";
 
 const SalarySchema = new mongoose.Schema(
@@ -78,9 +80,19 @@ const SalarySchema = new mongoose.Schema(
     },
     bank: {
       type: String,
-      enum: ["HBL", "Islamic Bank", "Other", ""],   // ← empty string allow
+      enum: ["HBL", "Islamic Bank", "Other"],
       default: "HBL",
-      required: false,   // ← required false kar diya
+      // Yeh conditional validation lagao
+      validate: {
+        validator: function (value) {
+          // Agar paymentMethod Cash nahi hai to bank required hai
+          if (this.paymentMethod !== "Cash") {
+            return !!value && value.trim() !== "";
+          }
+          return false; // Cash ke liye bank empty ya null allowed
+        },
+        message: "Bank is required when payment method is not Cash",
+      },
     },
     status: {
       type: String,
