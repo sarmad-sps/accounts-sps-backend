@@ -107,60 +107,27 @@ router.put("/", auth, async (req, res) => {
 // Example: receivingsRouter.js
 router.put("/:id", auth, async (req, res) => {
   try {
-    console.log("PUT request received for ID:", req.params.id);
-    console.log("Body:", JSON.stringify(req.body, null, 2));
+    const { companyName } = req.body;
 
-    const { id } = req.params;
-    const updateData = req.body;
-
-    let state = await StateModel.findOne();
+    const state = await StateModel.findOne({ companyName });
     if (!state) {
-      console.log("No state document found");
-      return res.status(404).json({ error: "State not found" });
+      return res.status(404).json({ error: "Company not found" });
     }
 
-    console.log("State found, receivings count:", state.receivings?.length || 0);
-
-    const index = state.receivings.findIndex(r => r.id === id);
-    console.log("Found index:", index);
-
-    if (index === -1) {
-      console.log("Receiving not found for id:", id);
+    const receiving = state.receivings.id(req.params.id);
+    if (!receiving) {
       return res.status(404).json({ error: "Receiving not found" });
     }
 
-    const allowed = [
-      "clientName", "clientAddress", "clientPhone", "party", "amount",
-      "date", "status", "bank", "notes", "category", "paymentMode",
-      "insuranceCover", "trackerCompany", "trackerType", "addonService",
-      "vehicleType", "registrationNo", "vehicleBrand", "chassisNumber",
-      "engineNumber", "agentName"
-    ];
-
-    const updated = { ...state.receivings[index] };
-
-    allowed.forEach(key => {
-      if (updateData[key] !== undefined) {
-        updated[key] = updateData[key];
-      }
-    });
-
-    console.log("Updated receiving object:", updated);
-
-    state.receivings[index] = updated;
+    receiving.set(req.body);
 
     await state.save();
-    console.log("State saved successfully");
 
-    res.json({ message: "Receiving updated", receiving: updated });
+    res.json({ success: true, receiving });
   } catch (err) {
-    console.error("PUT /receivings/:id ERROR:");
-    console.error(err.stack || err);
-    res.status(500).json({ 
-      error: "Update failed",
-      message: err.message || "Internal server error",
-      stack: process.env.NODE_ENV === "development" ? err.stack : undefined
-    });
+    console.error("UPDATE RECEIVING ERROR 👉", err);
+    res.status(500).json({ error: err.message });
   }
 });
+
 export default router;
