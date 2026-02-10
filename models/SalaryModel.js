@@ -137,22 +137,23 @@ const SalarySchema = new mongoose.Schema(
       enum: ["Cash", "Online", "Cheque", "Bank Transfer"],
       required: true,
     },
-    bank: {
-      type: String,
-      enum: ["HBL", "Bank Islami", "Other"],
-      default: null,
-      validate: {
-        validator: function (value) {
-          // Cash ho to bank NULL allow
-          if (this.paymentMethod === "Cash") {
-            return value === null || value === undefined;
-          }
-          // Non-cash ho to bank REQUIRED
-          return !!value;
-        },
-        message: "Bank is required when payment method is not Cash",
-      },
+  bank: {
+  type: String,
+  enum: ["HBL", "Bank Islami", "Other"],
+  default: null,
+  validate: {
+    validator: function (value) {
+      if (this.paymentMethod === "Cash") {
+        // Cash → bank can be null, undefined, or empty
+        return value === null || value === undefined || value === "";
+      }
+      // Non-Cash → bank must be non-empty string
+      return typeof value === "string" && value.trim() !== "";
     },
+    message: "Bank is required when payment method is not Cash",
+  },
+},
+
     status: {
       type: String,
       enum: ["Paid", "Unpaid"],
