@@ -106,16 +106,33 @@ router.patch("/:id", async (req, res) => {
 
       await inventoryItem.save();
 
-      request.receipt = {
-        invoiceNo,
-        receivedQty: Number(receivedQty),
-        receivedAt: new Date(),
-        enteredBy: "Accountant",
-        paymentMethod,
-        bank: bank || null,
-        paymentStatus: paymentStatus || "Paid",
-        amount: amount ? Number(amount) : null,
-      };
+      
+      // request.receipt = {
+      //   invoiceNo,
+      //   receivedQty: Number(receivedQty),
+      //   receivedAt: new Date(),
+      //   enteredBy: "Accountant",
+      //   paymentMethod,
+      //   bank: bank || null,
+      //   paymentStatus: paymentStatus || "Paid",
+      //   amount: amount ? Number(amount) : null,
+      // };
+    request.receipt = {
+  invoiceNo,
+  receivedQty: Number(receivedQty),
+  receivedAt: new Date(),
+  enteredBy: "Accountant",
+  paymentMethod,
+  bank:
+    paymentMethod === "Cash"
+      ? null
+      : bank || null,
+  paymentStatus: paymentStatus || "Paid",
+  amount: amount ? Number(amount) : null,
+};
+
+    
+    
     }
 
     /* ===== STORE → REQUEST ADMIN (AFTER STOCK RECEIVED) ===== */

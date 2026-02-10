@@ -6,7 +6,10 @@ const ReceiptSchema = new mongoose.Schema({
   receivedAt: Date,
   enteredBy: String,
   paymentMethod: String,
-  bank: String,
+  bank: {
+  type: String,
+  default: null,
+},
   paymentStatus: String,
   amount: Number,
 });
