@@ -1,5 +1,3 @@
-
-
 import express from "express";
 import InventoryRequest from "../models/Request.js";
 import InventoryItem from "../models/InventoryItem.js";
@@ -40,7 +38,7 @@ router.get("/", async (req, res) => {
       requests.map(async (r) => {
         const item = await InventoryItem.findOne({ name: r.item });
         return { ...r.toObject(), stock: item ? item.quantity : 0 };
-      })
+      }),
     );
 
     res.json(enriched);
@@ -52,7 +50,15 @@ router.get("/", async (req, res) => {
 /* ================= UPDATE REQUEST STATUS ================= */
 router.patch("/:id", async (req, res) => {
   try {
-    const { status, receivedQty, invoiceNo, paymentMethod, bank, paymentStatus, amount } = req.body;
+    const {
+      status,
+      receivedQty,
+      invoiceNo,
+      paymentMethod,
+      bank,
+      paymentStatus,
+      amount,
+    } = req.body;
 
     const request = await InventoryRequest.findById(req.params.id);
     if (!request) {
@@ -85,12 +91,22 @@ router.patch("/:id", async (req, res) => {
     /* ===== ACCOUNTANT → RECEIVE STOCK ===== */
     if (status === "stock_received") {
       if (!receivedQty || !invoiceNo || !paymentMethod) {
-        return res.status(400).json({ message: "Receipt info required (invoiceNo, receivedQty, paymentMethod)" });
+        return res
+          .status(400)
+          .json({
+            message:
+              "Receipt info required (invoiceNo, receivedQty, paymentMethod)",
+          });
       }
 
       // If payment method requires a bank, ensure bank provided
-      if ((paymentMethod === "Bank Transfer" || paymentMethod === "Check") && !bank) {
-        return res.status(400).json({ message: "Bank is required for Bank Transfer or Check" });
+      if (
+        (paymentMethod === "Bank Transfer" || paymentMethod === "Check") &&
+        !bank
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Bank is required for Bank Transfer or Check" });
       }
 
       request.status = "stock_received";
@@ -106,7 +122,6 @@ router.patch("/:id", async (req, res) => {
 
       await inventoryItem.save();
 
-      
       // request.receipt = {
       //   invoiceNo,
       //   receivedQty: Number(receivedQty),
@@ -117,22 +132,16 @@ router.patch("/:id", async (req, res) => {
       //   paymentStatus: paymentStatus || "Paid",
       //   amount: amount ? Number(amount) : null,
       // };
-    request.receipt = {
-  invoiceNo,
-  receivedQty: Number(receivedQty),
-  receivedAt: new Date(),
-  enteredBy: "Accountant",
-  paymentMethod,
-  bank:
-    paymentMethod === "Cash"
-      ? null
-      : bank || null,
-  paymentStatus: paymentStatus || "Paid",
-  amount: amount ? Number(amount) : null,
-};
-
-    
-    
+      request.receipt = {
+        invoiceNo,
+        receivedQty: Number(receivedQty),
+        receivedAt: new Date(),
+        enteredBy: "Accountant",
+        paymentMethod,
+        bank: paymentMethod === "Cash" ? null : bank || null,
+        paymentStatus: paymentStatus || "Paid",
+        amount: amount ? Number(amount) : null,
+      };
     }
 
     /* ===== STORE → REQUEST ADMIN (AFTER STOCK RECEIVED) ===== */
