@@ -139,7 +139,7 @@ const SalarySchema = new mongoose.Schema(
     },
     bank: {
       type: String,
-      enum: ["HBL", "Islamic Bank", "Other"],
+      enum: ["HBL", "Bank Islami", "Other"],
       default: null,
       validate: {
         validator: function (value) {
