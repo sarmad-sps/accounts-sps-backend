@@ -8,11 +8,12 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const stateData = await State.findOne();
+    console.log("Dashboard summary API hit");
 
-    const payments = await Payment.find();
-    const salaries = await Salary.find();
-    const inventoryRequests = await InventoryRequest.find();
+    const stateData = await State.findOne().lean();
+    const payments = await Payment.find().lean();
+    const salaries = await Salary.find().lean();
+    const inventoryRequests = await InventoryRequest.find().lean();
 
     const openingBalances = stateData?.openingBalances || {};
 
@@ -26,7 +27,7 @@ router.get("/", async (req, res) => {
       received: 0,
       paid: 0,
       pending: 0,
-      balance: Number(openingBalances.CASH || 0),
+      balance: Number(openingBalances?.CASH || 0),
     };
 
     let totalReceived = 0;
@@ -35,21 +36,34 @@ router.get("/", async (req, res) => {
 
     const normalizeBankKey = (bankName) => {
       if (!bankName) return "CASH";
-      const b = bankName.trim().toLowerCase();
+      const b = String(bankName).trim().toLowerCase();
       if (b === "bank islami" || b === "islamic bank") return "BANK_ISLAMI";
       if (b === "hbl") return "HBL";
-      return bankName.toUpperCase().replace(/\s+/g, "_");
+      return b.toUpperCase().replace(/\s+/g, "_");
     };
 
-    const processTransaction = (item, modeField, bankField, amountField, statusField) => {
-      const amount = Number(item[amountField]) || 0;
+    const safeNumber = (val) => Number(val) || 0;
+
+    const processTransaction = (
+      item,
+      modeField,
+      bankField,
+      amountField,
+      statusField
+    ) => {
+      if (!item) return;
+
+      const amount = safeNumber(item?.[amountField]);
       if (!amount) return;
 
-      const status = (item[statusField] || "").toLowerCase();
-      const mode = (item[modeField] || "").toLowerCase();
-      const bank = normalizeBankKey(item[bankField]);
+      const status = String(item?.[statusField] || "").toLowerCase().trim();
+      const mode = String(item?.[modeField] || "").toLowerCase().trim();
+      const bank = normalizeBankKey(item?.[bankField]);
 
-      const isCash = mode === "cash" || bank === "CASH" || !item[bankField];
+      const isCash =
+        mode === "cash" ||
+        bank === "CASH" ||
+        !item?.[bankField];
 
       if (isCash) {
         if (status === "received") {
@@ -67,34 +81,41 @@ router.get("/", async (req, res) => {
         return;
       }
 
+      // BANK TRANSACTIONS
       if (status === "received") {
-        receivedByBank[bank] = (receivedByBank[bank] || 0) + amount;
-        bankBalanceByBank[bank] = (bankBalanceByBank[bank] || 0) + amount;
+        receivedByBank[bank] = safeNumber(receivedByBank[bank]) + amount;
+        bankBalanceByBank[bank] =
+          safeNumber(bankBalanceByBank[bank]) + amount;
         totalReceived += amount;
       } else if (status === "pending" || status === "unpaid") {
-        pendingByBank[bank] = (pendingByBank[bank] || 0) + amount;
+        pendingByBank[bank] = safeNumber(pendingByBank[bank]) + amount;
         totalPending += amount;
       } else if (status === "paid") {
-        paidByBank[bank] = (paidByBank[bank] || 0) + amount;
-        bankBalanceByBank[bank] = (bankBalanceByBank[bank] || 0) - amount;
+        paidByBank[bank] = safeNumber(paidByBank[bank]) + amount;
+        bankBalanceByBank[bank] =
+          safeNumber(bankBalanceByBank[bank]) - amount;
         totalPaid += amount;
       }
     };
 
+    // STATE RECEIVINGS
     (stateData?.receivings || []).forEach((r) =>
       processTransaction(r, "mode", "bank", "amount", "status")
     );
 
-    payments.forEach((p) =>
+    // PAYMENTS
+    (payments || []).forEach((p) =>
       processTransaction(p, "paymentMode", "bank", "amount", "status")
     );
 
-    salaries.forEach((s) =>
+    // SALARIES
+    (salaries || []).forEach((s) =>
       processTransaction(s, "paymentMode", "bank", "amount", "status")
     );
 
-    inventoryRequests.forEach((r) => {
-      if (r.receipt) {
+    // INVENTORY REQUESTS
+    (inventoryRequests || []).forEach((r) => {
+      if (r?.receipt && typeof r.receipt === "object") {
         processTransaction(
           r.receipt,
           "mode",
@@ -106,19 +127,21 @@ router.get("/", async (req, res) => {
     });
 
     const totalBankBalances = Object.values(bankBalanceByBank).reduce(
-      (sum, val) => sum + (Number(val) || 0),
+      (sum, val) => sum + safeNumber(val),
       0
     );
 
-    const netCashEffect = cashInHand.received - cashInHand.paid;
+    const netCashEffect =
+      safeNumber(cashInHand.received) - safeNumber(cashInHand.paid);
 
-    const totalAssets = totalBankBalances + netCashEffect;
+    const totalAssets =
+      safeNumber(totalBankBalances) + safeNumber(netCashEffect);
 
     res.json({
-      totalAssets,
-      totalReceived,
-      totalPending,
-      totalPaid,
+      totalAssets: safeNumber(totalAssets),
+      totalReceived: safeNumber(totalReceived),
+      totalPending: safeNumber(totalPending),
+      totalPaid: safeNumber(totalPaid),
       bankBalanceByBank,
       receivedByBank,
       pendingByBank,
@@ -127,8 +150,11 @@ router.get("/", async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to calculate dashboard summary" });
+    console.error("DASHBOARD ERROR:", error);
+    res.status(500).json({
+      error: "Failed to calculate dashboard summary",
+      message: error.message,
+    });
   }
 });
 
