@@ -106,6 +106,7 @@ import inventoryRequests from "./routes/inventoryRequests.js";
 import salaryRoutes from "./routes/SalaryRoute.js";
 import paymentExpenseRoutes from "./routes/paymentExpense.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
+import dashboardRoute from "./routes/dashboard.js";
 const app = express();
 
 app.use(cors());
@@ -136,5 +137,6 @@ app.use("/api/inventory-requests", inventoryRequests);
 app.use("/api/salaries", salaryRoutes);
 app.use("/api/payments", paymentExpenseRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api", dashboardRoute);
 // ❌ NO app.listen on Vercel
 export default app;
