@@ -2,7 +2,7 @@ import express from "express";
 import State from "../models/State.js";
 import Payment from "../models/PaymentExpense.js";
 import Salary from "../models/SalaryModel.js";
-import InventoryRequest from "../models/InventoryRequest.js";
+import InventoryRequest from "../models/Request.js";
 
 const router = express.Router();
 
