@@ -1,6 +1,6 @@
 import express from "express";
 import State from "../models/State.js";
-import PaymentExpense from "../models/paymentExpense.js"; // ✅ fix
+import PaymentExpense from "../models/PaymentExpense.js"; // ✅ fix
 import Salary from "../models/Salary.js";
 import InventoryRequest from "../models/InventoryRequest.js";
 
