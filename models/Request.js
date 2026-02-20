@@ -1,39 +1,19 @@
 import mongoose from "mongoose";
 
-
 const ReceiptSchema = new mongoose.Schema({
   invoiceNo: String,
   receivedQty: Number,
   receivedAt: Date,
   enteredBy: String,
-  paymentMethod: { type: String, required: true },
-  bank: { 
-    type: String, 
-    default: null,
-    // ✅ Validation: agar Cash nahi hai tab required
-    validate: {
-      validator: function(value) {
-        // Agar paymentMethod Cash hai toh bank null hona chahiye
-        if (this.paymentMethod === "Cash") {
-          return value === null || value === undefined;
-        }
-        // Agar Cash nahi hai toh bank required
-        return value && value.trim().length > 0;
-      },
-      message: "Bank is required for non-Cash payments"
-    }
-  },
+  paymentMethod: String,
+  bank: {
+  type: String,
+  default: null,
+},
   paymentStatus: String,
   amount: Number,
 });
 
-// ✅ Pre-save hook to clean bank field
-ReceiptSchema.pre('save', function(next) {
-  if (this.paymentMethod === "Cash") {
-    this.bank = null;
-  }
-  next();
-});
 const InventoryRequestSchema = new mongoose.Schema(
   {
     item: { type: String, required: true },
