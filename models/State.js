@@ -17,7 +17,7 @@ const ReceivingSchema = new mongoose.Schema(
     bank: String,
     category: String,
     paymentMode: { type: String, default: "Cash" }, // updated name
-
+totalAmount: { type: Number, default: 0 }, 
     // Tracker specific fields
     trackerCompany: { type: String, default: null },
     trackerType: { type: String, default: null },
