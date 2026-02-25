@@ -12,12 +12,13 @@ const ReceivingSchema = new mongoose.Schema(
     party: String,
     amount: Number,
     date: String,
+     paymentReceivedDate: { type: String, default: null },
     notes: String,
     status: String,
     bank: String,
     category: String,
     paymentMode: { type: String, default: "Cash" }, // updated name
-totalAmount: { type: Number, default: 0 }, 
+    totalAmount: { type: Number, default: 0 },
     // Tracker specific fields
     trackerCompany: { type: String, default: null },
     trackerType: { type: String, default: null },
@@ -33,7 +34,6 @@ totalAmount: { type: Number, default: 0 },
   },
   { _id: true, timestamps: true },
 );
-
 
 /* ================= ITEM SCHEMA ================= */
 const ExpenseItemSchema = new mongoose.Schema({
@@ -80,7 +80,7 @@ const ExpenseSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Expense", ExpenseSchema);
@@ -89,13 +89,13 @@ export default mongoose.model("Expense", ExpenseSchema);
 const PaymentSchema = new mongoose.Schema(
   {
     date: String,
-    category: String,        // Kitchen Items etc
-    expenseType: String,     // Office Grocery etc
-    mode: String,            // "category" | "type"
+    category: String, // Kitchen Items etc
+    expenseType: String, // Office Grocery etc
+    mode: String, // "category" | "type"
     items: [ExpenseItemSchema],
     total: Number,
   },
-  { _id: true, timestamps: true }
+  { _id: true, timestamps: true },
 );
 
 const StateSchema = new mongoose.Schema({
@@ -103,7 +103,7 @@ const StateSchema = new mongoose.Schema({
   openingBalances: {
     BANK_ISLAMI: Number,
     HBL: Number,
-     CASH: Number,
+    CASH: Number,
   },
   receivings: [ReceivingSchema],
   expenses: { type: [ExpenseSchema], default: [] },
