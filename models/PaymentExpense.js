@@ -37,7 +37,6 @@ const paymentExpenseSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Amount is required"],
       min: [1, "Amount must be greater than 0"],
-      
     },
     totalAmount: {
   type: Number,
